@@ -1,0 +1,4 @@
+3
+car samochod
+book ksiazka
+exam egzamin
