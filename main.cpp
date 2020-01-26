@@ -28,7 +28,7 @@ void game_flashcard2(string file);							//Modul do gry w fiszki z polskiego na 
 void flashcard_quiz(string file);							//Quiz do gry z polskiego na angielski
 void flashcard_quiz2(string file);							//Quiz do gry z angielskiego na polski
 void remember_game(string file);							//Gra w pamiec
-
+void random_queue(int* queue, int size);					//Losowa kolejnosc
 
 
 
@@ -940,19 +940,30 @@ void remember_game(string file)
 	cin >> size_of_board;
 
 	string* const array_words = new string[size_of_board*2];		//Tablica do przechowywania wyrazow
-	int* array_numbers = new int[size_of_board*2];			//Tablica zapasowa do sprawdzania czy wyraz jest odkryty
+	int* array_numbers = new int[size_of_board*2];					//Tablica zapasowa do sprawdzania czy wyraz jest odkryty
+	int* array_queue = new int[size_of_board * 2];					//Tablica do zmienionej kolejnosci slow
 
-	for (int i = 0; i < size_of_board * 2; i++)
+	for (int i = 0; i < size_of_board * 2; i++)						//Ustawienie wszystkich komorek na nieodkryte
 	{
 		array_numbers[i] = 0;
+		array_queue[i] = i + 1;
 	}
 
-	for (int i = 0; i < size_of_board*2; i+=2)
+	for (int i = 0; i < size_of_board*2; i+=2)						//Wylosowanie slowek
 	{
 		nr_line = random_flashcard(file);
 		array_words[i] = write_polish_word(file, nr_line);
 		array_words[i+1] = write_english_word(file, nr_line);
+		
 	}
+
+	random_queue(array_queue, size_of_board * 2);
+
+	for (int i = 0; i < size_of_board * 2; i++)
+	{
+		cout << array_queue[i] << endl;
+	}
+	//system("pause");
 
 	/*for (int i = 0; i < size_of_board * 2; i ++)
 	{
@@ -960,24 +971,19 @@ void remember_game(string file)
 	}
 	*/
 
-	for (int j = 0; j < size_of_board * 2; j++)
+	for (int j = 0; j < size_of_board * 2; j++)					
 	{
-		znak = 'a';
+		//znak = 'a';
 
-		for (int k = 0; k < 2; k++)
+		for (int k = 0; k < 2; k++)										//Petla przechodzaca dwa razy po planszy i porownujaca slowa
 		{
-			while (znak != 13) //&& array_numbers[position - 1] != 1)
+			znak = 'a';
+
+			while (znak != 13) //&& array_numbers[position - 1] != 1)	//Petla streujaca menu
 			{
-				for (int i = 1; i <= size_of_board * 2; i++)
+				for (int i = 1; i <= size_of_board * 2; i++)			//Petla wypisujaca slowa
 				{
-					SetConsoleTextAttribute(hOut, FOREGROUND_RED);		//Zmiana koloru na czerwony
-
-
-
-					SetConsoleTextAttribute(hOut, 15);					//Powrot do bialego koloru
-
-
-
+				
 					if (array_numbers[i - 1] == 1)
 					{
 						if (position == i)
@@ -997,12 +1003,12 @@ void remember_game(string file)
 						{
 							SetConsoleTextAttribute(hOut, FOREGROUND_RED);		//Zmiana koloru na czerwony
 
-							cout << " ----- \t";
+							cout << " -------- \t";
 
 							SetConsoleTextAttribute(hOut, 15);					//Powrot do bialego koloru
 						}
 						else
-							cout << " ----- \t";
+							cout << " -------- \t";
 					}
 
 
@@ -1013,7 +1019,7 @@ void remember_game(string file)
 
 				znak = _getch();
 
-				if (znak == 80 && position < (size_of_board * 2) - 3)			//strzalka w dol
+				if (znak == 80 && position < (size_of_board * 2) - 3)		//strzalka w dol
 					position += 4;
 				else if (znak == 72 && position > 4)						//strzalka w gore
 					position -= 4;
@@ -1025,11 +1031,11 @@ void remember_game(string file)
 
 
 
-
 				system("cls");
 
 
 			}
+
 			choose[k] = position;
 
 			array_numbers[position - 1] = 1;
@@ -1037,6 +1043,43 @@ void remember_game(string file)
 
 			
 			
+			
+		}
+
+		for (int i = 1; i <= size_of_board * 2; i++)
+		{
+			
+			if (array_numbers[i - 1] == 1)
+			{
+				if (position == i)
+				{
+					SetConsoleTextAttribute(hOut, FOREGROUND_RED);		//Zmiana koloru na czerwony
+
+					cout << array_words[i - 1] << "\t";
+
+					SetConsoleTextAttribute(hOut, 15);					//Powrot do bialego koloru
+				}
+				else
+					cout << array_words[i - 1] << "\t";
+			}
+			else
+			{
+				if (position == i)
+				{
+					SetConsoleTextAttribute(hOut, FOREGROUND_RED);		//Zmiana koloru na czerwony
+
+					cout << " -------- \t";
+
+					SetConsoleTextAttribute(hOut, 15);					//Powrot do bialego koloru
+				}
+				else
+					cout << " -------- \t";
+			}
+
+
+
+			if (i != 0 && i % 4 == 0)
+				cout << endl;
 		}
 
 
@@ -1044,9 +1087,42 @@ void remember_game(string file)
 
 
 
+		if((choose[0]%2==0 && choose[0]==choose[1]+1) || (choose[1] % 2 == 0 && choose[1] == choose[0] + 1))
+		{
+			cout << endl << "Poprawna odpowiedz\n";
+			system("pause");
+			system("cls");
+		}
+		else
+		{	
+			cout << endl << "Nie poprawna odpowiedz\n";
+			array_numbers[choose[0]-1] = 0;
+			array_numbers[choose[1]-1] = 0;
+			system("pause");
+			system("cls");
+		}
+
+	}
 
 
+	//Usuwanie tablic
+	delete[] array_words;
+	delete[] array_numbers;
+	delete[] array_queue;
+}
 
+	//Funckja ktora losowo miesza elementy tablicy
 
+void random_queue(int* queue, int size)
+{
+	queue[size];
+	int random_call;		//Zmienna do losowania 
+
+	for (int i = 0; i < size; i++)
+	{
+		random_call = rand() % size;
+		int x = queue[i];
+		queue[i] = queue[random_call];
+		queue[random_call] = x;
 	}
 }
