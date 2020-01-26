@@ -30,6 +30,15 @@ void flashcard_quiz2(string file);							//Quiz do gry z angielskiego na polski
 void remember_game(string file);							//Gra w pamiec
 void random_queue(int* queue, int size);					//Losowa kolejnosc
 
+void options();												//Otwiera opcje edycji fiszek
+void new_file();											//Dodanie nowego pliku z fiszkami
+string txtfile(string file_name);							//Sprawdzenie czy w nazwie pliku istnieje koncowka .txt
+bool is_exist(string file);									//Sprawdzenie czy wybrany plik istnieje
+void create_new_flashcard(string file);						//Tworzenie nowego pliku z fiszkami
+void add_file();											//Dodanie istniejacego pliku do pliku files.txt
+bool is_exist_inside_files(string file);					//Sprawdzenie czy podany plik istnieje juz wewnatrz pliku files.txt
+void add_flashcards(string file);							//Dodanie dodatkowych fiszek do istniejacych plikow
+
 
 
 int color_menu();
@@ -261,7 +270,14 @@ int main()
 			
 		}
 
-		case 7:				//Wyjscie z programu
+		case 7:
+		{
+			options();
+			break;
+		}
+
+
+		case 8:				//Wyjscie z programu
 		{
 
 			system("cls");
@@ -271,7 +287,7 @@ int main()
 
 		}
 		}
-	} while (menu != 7);
+	} while (menu != 8);
 
 	
 	return 0;
@@ -564,9 +580,11 @@ void game_flashcard(string file)
 	int nr_flashcard;						//numer wylosowanej fiszki
 	string english_word, polish_word,answer;
 
+	int amount_of_games;
+	cout << "Podaj ile slow chcesz powtorzyc: ";
+	cin >> amount_of_games;
 
-
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < amount_of_games; i++)
 	{
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
@@ -607,9 +625,11 @@ void game_flashcard2(string file)
 	int nr_flashcard;						//numer wylosowanej fiszki
 	string english_word, polish_word, answer;
 
+	int amount_of_games;
+	cout << "Podaj ile slow chcesz powtorzyc: ";
+	cin >> amount_of_games;
 
-
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < amount_of_games; i++)
 	{
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
@@ -752,8 +772,18 @@ int color_menu()
 		{
 			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
 		}
-		cout << "\tWyjscie z programu" << endl;
+		cout << "\tKreator fiszek" << endl;
 		if (position == 7)
+		{
+			SetConsoleTextAttribute(hOut, 15);
+		}
+
+		if (position == 8)
+		{
+			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
+		}
+		cout << "\tWyjscie z programu" << endl;
+		if (position == 8)
 		{
 			SetConsoleTextAttribute(hOut, 15);
 		}
@@ -761,7 +791,7 @@ int color_menu()
 
 		znak = _getch();
 
-		if (znak == 80 && position < 7)
+		if (znak == 80 && position < 8)
 			position++;
 		else if (znak == 72 && position > 1)
 			position--;
@@ -782,7 +812,11 @@ void flashcard_quiz(string file)
 	int answer, user_answer;				//Odpowiedz, opdowiedz uzytkownika
 	string english_word, polish_word;
 
-	for (int i = 0; i < 5; i++)
+	int amount_of_games;
+	cout << "Podaj ile slow chcesz powtorzyc: ";
+	cin >> amount_of_games;
+
+	for (int i = 0; i < amount_of_games; i++)
 	{
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
@@ -858,7 +892,11 @@ void flashcard_quiz2(string file)
 	int answer, user_answer;				//Odpowiedz, opdowiedz uzytkownika
 	string english_word, polish_word;
 
-	for (int i = 0; i < 5; i++)
+	int amount_of_games;
+	cout << "Podaj ile slow chcesz powtorzyc: ";
+	cin >> amount_of_games;
+
+	for (int i = 0; i < amount_of_games; i++)
 	{
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
@@ -1125,4 +1163,263 @@ void random_queue(int* queue, int size)
 		queue[i] = queue[random_call];
 		queue[random_call] = x;
 	}
+}
+
+void options()
+{
+	//int menu_option;
+
+	char znak = 'a';
+	int position = 1;
+
+	HANDLE hOut;									//Uchwyt koloru
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	while (znak != 13)
+	{
+		if (position == 1)
+		{
+			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
+		}
+		cout << "\tStworz nowa fiszke" << endl;
+		if (position == 1)
+		{
+			SetConsoleTextAttribute(hOut, 15);
+		}
+
+		if (position == 2)
+		{
+			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
+		}
+		cout << "\tPodepnij gotowy folder" << endl;
+		if (position == 2)
+		{
+			SetConsoleTextAttribute(hOut, 15);
+		}
+
+
+		znak = _getch();
+
+		if (znak == 80 && position < 2)
+			position++;
+		else if (znak == 72 && position > 1)
+			position--;
+
+		system("cls");
+	}
+
+	switch (position)
+	{
+	case 1:
+	{
+		new_file();
+		break;
+	}
+
+	case 2:
+	{
+
+
+		add_file();
+
+		break;
+	}
+
+
+
+
+
+
+
+
+
+	}
+
+
+	system("cls");
+
+}
+
+void new_file()
+{
+	string file;
+	cout << "Podaj nazwe pliku :";
+	cin >> file;
+
+	file = txtfile(file);			//Poprawa nazwy pliku poprzez dodanie .txt
+
+	//cout << file;
+
+	is_exist(file);
+
+	if (!is_exist(file))
+	{
+		create_new_flashcard(file);
+	}
+	else
+	{
+		cout << "Podany plik juz istnieje nie mozna utworzyc nowego\n";
+	}
+
+
+	system("PAUSE");
+}
+
+	//Sprawdzenie czy w nazwie pliku istnieje koncowka .txt
+
+string txtfile(string file_name)
+{
+	string nazwa = file_name;
+	int length = nazwa.length();
+	if (length <= 4)
+	{
+		file_name += ".txt";
+		return file_name;
+	}
+
+	if (file_name[length - 4] != '.' || file_name[length - 3] != 't' || file_name[length - 2] != 'x' || file_name[length - 1] != 't')
+	{
+		file_name += ".txt";
+	}
+
+	system("cls");
+	return file_name;
+}
+
+	//Sprawdzenie czy wybrany plik istnieje
+
+bool is_exist(string file)
+{
+	fstream plik;
+	plik.open(file, ios::in | ios::_Nocreate);  // wa¿ne, by nie tworzyæ pliku, jeœli nie istnieje
+	if (plik.is_open())
+	{
+		plik.close();
+		return true;
+	}
+	plik.close();
+	return false;
+}
+
+	//Tworzenie nowego pliku z fiszkami
+
+void create_new_flashcard(string file)
+{
+	int amount_of_flashcards;
+
+	cout << "Podaj liczbe slow";
+	cin >> amount_of_flashcards;
+
+	string* flash_p = new string[amount_of_flashcards*2];
+
+	for (int i = 0; i < amount_of_flashcards*2; i += 2)
+	{
+		cout << "Podaj angielske slowo\n";
+		cin >> flash_p[i];
+		cout << "Podaj polskie slowo\n";
+		cin >> flash_p[i+1];
+	}
+
+	fstream new_file;
+
+	new_file.open(file, ios::out);
+	if (new_file.good() == true)
+	{
+		new_file << amount_of_flashcards << endl;
+		for (int i = 0; i < amount_of_flashcards*2; i+=2)
+		{
+			new_file << flash_p[i] << " " << flash_p[i + 1] << endl;
+		}
+		new_file.close();
+
+		fstream add_file;
+		add_file.open("files.txt", ios::out | ios::app);
+		if (add_file.good())
+		{
+			add_file <<endl<< file;
+		}
+		else
+		{
+			cout << "Blad przy dopisie do bazy plikow";
+		}
+		add_file.close();
+
+	}
+	else
+	{
+		cout << "Blad przy tworzeniu pliku";
+	}
+}
+
+void add_file()
+{
+	string file;
+	cout << "Podaj nazwe pliku :";
+	cin >> file;
+
+	file = txtfile(file);
+
+	//cout << file;
+	//system("pause");
+
+	if(is_exist(file))
+	{
+		if (!is_exist_inside_files(file))
+		{
+			fstream add_file;
+			add_file.open("files.txt", ios::out | ios::app);
+			if (add_file.good())
+			{
+				add_file << endl << file;
+				cout << "Plik podpiety prawidlowo\n";
+				system("pause");
+			}
+			else
+			{
+				cout << "Blad przy dopisie do bazy plikow";
+			}
+			add_file.close();
+		}
+		else
+		{
+			cout << "Ten plik jest juz podpiety\nNie mozna ponownie zaladowac pliku\n";
+		}
+	}
+	else
+	{
+		cout << "Podany plik nie istnieje\nNie mozna podpiac fiszek\n";
+	}
+
+
+
+	system("pause");
+}
+
+bool is_exist_inside_files(string file)
+{
+	fstream plik;
+	string line;
+
+	plik.open("files.txt");
+
+	if (plik.good())
+	{
+		while (getline(plik, line))
+		{
+			if (line == file)
+			{
+				plik.close();
+				return true;
+			}
+		}
+	}
+	else
+	{
+		cout << "Blad pliku";
+		plik.close();
+		return false;
+	}
+	plik.close();
+
+	return false;
 }
