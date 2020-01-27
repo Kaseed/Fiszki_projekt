@@ -17,7 +17,9 @@ int amount_of_files();										//Program liczy dostepne pliki
 int write_words(string file);								//Program wypisuje wszystkie wyrazy 
 string choose_file(void);									//Program podaje nazwe pliku z ktorym uzytkownik chce pracowac
 string write_english_word(string file , int nr_line);		//Program zwraca slowo w jezyku angielskim z pobranego pliku
-string write_polish_word(string file , int nr_line);		//Program zwraca slowo w jezyku polskim z pobranego pliku
+string write_polish_words(string file , int nr_line);		//Program zwraca wszystkie slowa w jezyku polskim z pobranego pliku
+string write_polish_word(string file, int nr_line);			//Program zwraca pierwsze slowo w jezyku polskim z pobranego pliku
+string show_one_word(string word);							//Program rozdziela zbitke wyrazow rozdzielonych przecinkiem i pokazuje pierwszy wyraz
 void write_files();											//Program wypisuje dostepne pliki
 
 int random_flashcard(string file);							//Wybiera randomowa liczbe z przedzialu pliku
@@ -37,7 +39,8 @@ bool is_exist(string file);									//Sprawdzenie czy wybrany plik istnieje
 void create_new_flashcard(string file);						//Tworzenie nowego pliku z fiszkami
 void add_file();											//Dodanie istniejacego pliku do pliku files.txt
 bool is_exist_inside_files(string file);					//Sprawdzenie czy podany plik istnieje juz wewnatrz pliku files.txt
-void add_flashcards(string file);							//Dodanie dodatkowych fiszek do istniejacych plikow
+int add_flashcards();										//Dodanie dodatkowych fiszek do istniejacych plikow
+int delete_file();											//Usuwanie plikow z pliku files.txt
 
 
 
@@ -105,7 +108,7 @@ int main()
 				cout << "\nblad wczytanego slowa w jezyku angielskim z pliku "<< file<<endl;
 				break;
 			}
-			polish_word = write_polish_word(file,nr_line);
+			polish_word = write_polish_words(file,nr_line);
 			cout << polish_word << endl;
 
 			if (polish_word == "000")	//Obsluga bledu wczytania polskiego slowa
@@ -423,9 +426,12 @@ int amount_of_files()
 		{
 			nr_files++;
 		}
+
+		plik.close();
 		return nr_files;
 	}
 	else
+		plik.close();
 		return -1;
 }
 
@@ -527,7 +533,7 @@ string write_english_word(string file, int nr_line)
 	//Program wypisuje wszystkie polskie slowa z pliku
 	//Jako kod bledu program zwraca symbol bledu 000
 
-string write_polish_word(string file , int nr_line)
+string write_polish_words(string file , int nr_line)
 {
 	if (nr_line > amount_of_words(file))
 		return "000";
@@ -552,10 +558,68 @@ string write_polish_word(string file , int nr_line)
 	}
 	else
 	{
-		return "000";
 		cout << "\nblad pliku\n";
+		return "000";
+		
 	}
 }
+
+
+
+string write_polish_word(string file, int nr_line)
+{
+	if (nr_line > amount_of_words(file))
+		return "000";
+	fstream plik;
+	plik.open(file);
+	if (plik.good())
+	{
+		string line;
+		string polish_word;
+		for (int i = 0; i <= amount_of_words(file); i++)
+		{
+			getline(plik, line);
+			if (i == nr_line)
+			{
+				stringstream load(line);
+				load >> polish_word;
+				load >> polish_word;
+				
+				//Zamiana zbitki wyrazow na jeden wyraz
+				polish_word = show_one_word(polish_word);
+
+				return polish_word;
+			}
+		}
+		return "000";
+	}
+	else
+	{
+		cout << "\nblad pliku\n";
+		return "000";
+		
+	}
+}
+
+string show_one_word(string word)
+{
+	string line;
+	int length = word.length();
+
+	for (int i = 0; i < length; i++)
+	{
+		if (word[i] == ',')
+			return line;
+		else
+		{
+			line[i] = word[i];
+		}
+	}
+
+
+	return word;
+}
+
 
 	//Funkaja losuje randomowa liczbe z zakresu 
 
@@ -1197,10 +1261,30 @@ void options()
 			SetConsoleTextAttribute(hOut, 15);
 		}
 
+		if (position == 3)
+		{
+			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
+		}
+		cout << "\tDodaj fiszki" << endl;
+		if (position == 3)
+		{
+			SetConsoleTextAttribute(hOut, 15);
+		}
+
+		if (position == 4)
+		{
+			SetConsoleTextAttribute(hOut, FOREGROUND_RED);
+		}
+		cout << "\tUsun fiszki" << endl;
+		if (position == 4)
+		{
+			SetConsoleTextAttribute(hOut, 15);
+		}
+
 
 		znak = _getch();
 
-		if (znak == 80 && position < 2)
+		if (znak == 80 && position < 4)
 			position++;
 		else if (znak == 72 && position > 1)
 			position--;
@@ -1225,6 +1309,19 @@ void options()
 		break;
 	}
 
+	case 3:
+	{
+		add_flashcards();
+
+		break;
+	}
+
+	case 4:
+	{
+		delete_file();
+
+		break;
+	}
 
 
 
@@ -1422,4 +1519,156 @@ bool is_exist_inside_files(string file)
 	plik.close();
 
 	return false;
+}
+
+int add_flashcards()
+{
+	string polish_word, english_word;
+
+	string file;
+	cout << "Podaj nazwe pliku :";
+	cin >> file;
+
+	file = txtfile(file);
+
+	if (!is_exist(file))
+	{
+		cout << "Podany plik nie istnieje\n";
+		return -1;
+	}
+
+	int amount_of_new_flashcards;			//Liczba nowych slow
+
+	cout << "Podaj liczbe slow";
+	cin >> amount_of_new_flashcards;
+
+	int amount_of_old_flashcards = amount_of_words(file);		//Liczba starych slow
+
+	string* array_words = new string[amount_of_old_flashcards*2];
+
+	fstream plik;
+	plik.open(file);
+	if (plik.good())
+	{
+		string line;
+		string polish_word;
+
+		getline(plik, line);
+		for (int i = 0; i < amount_of_old_flashcards*2; i+=2)
+		{
+			getline(plik, line);
+			stringstream load(line);
+			load >> polish_word;
+			array_words[i] = polish_word;
+			load >> polish_word;
+			array_words[i+1] = polish_word;
+			
+		}
+	}
+	plik.close();
+
+	fstream new_file;
+
+	new_file.open(file, ios::out);
+	if (new_file.good() == true)
+	{
+		new_file << amount_of_old_flashcards + amount_of_new_flashcards << endl;
+		for (int i = 0; i < amount_of_old_flashcards * 2; i += 2)
+		{
+			new_file << array_words[i] << " " << array_words[i + 1] << endl;
+		}
+
+		delete[] array_words;								//Usuniecie z pamieci tablicy
+		//array_words = "NULL";
+
+		for (int i = 0; i < amount_of_new_flashcards; i++)
+		{
+			cout << "Podaj slowo po angielsku";
+			cin >> english_word;
+			cout << "Podaj slowo po polsku";
+			cin >> polish_word;
+			new_file << english_word << " " << polish_word << endl;
+		}
+
+		new_file.close();
+
+	
+
+	}
+	else
+	{
+		cout << "Blad przy otworzeniu pliku";
+		return -1;
+	}
+
+	return 1;
+}
+
+int delete_file()
+{
+	string file;
+	cout << "Podaj nazwe pliku :";
+	cin >> file;
+
+	file = txtfile(file);
+
+	if (!is_exist_inside_files(file))
+	{
+		cout << "Podany plik nie zostal podpiety\n";
+		return -1;
+	}
+
+	int amount_files = amount_of_files();			//Zmienna do przechowywania liczby plikow wewnatrz funkcji
+
+	string* array_files = new string[amount_files];
+
+	fstream plik;
+	string line;
+
+		//Wczytanie wyrazow z pliku
+
+	plik.open("files.txt");
+	if (plik.good())
+	{
+		for (int i = 0;i<amount_files;i++)
+		{
+			getline(plik, line);
+			array_files[i] = line;
+		}
+	}
+	else
+		return -1;
+
+	plik.close();
+
+		//Zapis wyrazow do pliku bez pliku usunietego
+
+	fstream plik2;
+
+	plik2.open("files.txt",ios::out);
+	if (plik2.good())
+	{
+		for (int i = 0; i < amount_files; i++)
+		{
+			if (i != 0 && file != array_files[i])
+				plik2 << endl;
+
+
+			if (file != array_files[i])
+				plik2 << array_files[i];
+		}
+	}
+	else
+		return -1;
+
+	plik2.close();
+
+	delete[] array_files;
+
+	cout << "\nPomyslnie usunieto plik " << file << endl;
+
+	system("pause");
+
+	return 1;
+
 }

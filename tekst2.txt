@@ -1,4 +1,5 @@
-3
+4
 car samochod
 book ksiazka
 exam egzamin
+doll lalka

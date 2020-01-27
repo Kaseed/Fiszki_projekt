@@ -1,3 +1,5 @@
 tekst1.txt
 tekst2.txt
 demo.txt
+test.txt
+pliknowy.txt
