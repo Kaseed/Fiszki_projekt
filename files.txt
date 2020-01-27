@@ -3,3 +3,5 @@ tekst2.txt
 demo.txt
 test.txt
 pliknowy.txt
+liczby.txt
+demo2.txt

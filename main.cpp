@@ -17,15 +17,18 @@ int amount_of_files();										//Program liczy dostepne pliki
 int write_words(string file);								//Program wypisuje wszystkie wyrazy 
 string choose_file(void);									//Program podaje nazwe pliku z ktorym uzytkownik chce pracowac
 string write_english_word(string file , int nr_line);		//Program zwraca slowo w jezyku angielskim z pobranego pliku
-string write_polish_words(string file , int nr_line);		//Program zwraca wszystkie slowa w jezyku polskim z pobranego pliku
+//string write_polish_words(string file , int nr_line);		//Program zwraca wszystkie slowa w jezyku polskim z pobranego pliku
 string write_polish_word(string file, int nr_line);			//Program zwraca pierwsze slowo w jezyku polskim z pobranego pliku
 string show_one_word(string word);							//Program rozdziela zbitke wyrazow rozdzielonych przecinkiem i pokazuje pierwszy wyraz
 void write_files();											//Program wypisuje dostepne pliki
+void show_score(int all,int good,int wrong);				//Program wypisuje tablice wynikow
 
 int random_flashcard(string file);							//Wybiera randomowa liczbe z przedzialu pliku
 string to_lower(string text);								//Zmniejsza wszystkie litery slowa
 void game_flashcard(string file);							//Modul do gry w fiszki z angielskiego na polski
 void game_flashcard2(string file);							//Modul do gry w fiszki z polskiego na angielski
+bool is_mistake(string good, string wrong);					//Funkcja sprawdza czy blad moze byc zaliczony jako literowka
+bool mistake_char(char good, char wrong);					//Funkcja sprawdza czy dwie litery sa bledem powaznym
 
 void flashcard_quiz(string file);							//Quiz do gry z polskiego na angielski
 void flashcard_quiz2(string file);							//Quiz do gry z angielskiego na polski
@@ -108,7 +111,7 @@ int main()
 				cout << "\nblad wczytanego slowa w jezyku angielskim z pliku "<< file<<endl;
 				break;
 			}
-			polish_word = write_polish_words(file,nr_line);
+			polish_word = write_polish_word(file,nr_line);
 			cout << polish_word << endl;
 
 			if (polish_word == "000")	//Obsluga bledu wczytania polskiego slowa
@@ -312,6 +315,41 @@ void write_files()
 			i++;
 		}
 	}
+}
+
+void show_score(int all, int good, int wrong)
+{
+	HANDLE hOut;									//Uchwyt koloru
+	hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	unsigned char call = 219;
+
+	cout << "\t";
+
+	for (int i = 0; i < good; i++)
+	{
+		SetConsoleTextAttribute(hOut, FOREGROUND_GREEN);		//Zmiana koloru na zielony
+
+		cout <<call<< " ";
+	}
+
+	for (int i = 0; i < wrong; i++)
+	{
+		SetConsoleTextAttribute(hOut, FOREGROUND_RED);		//Zmiana koloru na czerwony
+
+		cout <<call<< " ";
+	}
+
+	for (int i = 0; i < (all-good-wrong); i++)
+	{
+		SetConsoleTextAttribute(hOut, 15);					//Zmiana koloru na bialy
+
+		cout <<call<< " ";
+	}
+
+	cout << "\n\n";
+	SetConsoleTextAttribute(hOut, 15);					//Powrot do bialego koloru
+
 }
 
 	//Wybor dostepnego pliku do pracy
@@ -533,7 +571,7 @@ string write_english_word(string file, int nr_line)
 	//Program wypisuje wszystkie polskie slowa z pliku
 	//Jako kod bledu program zwraca symbol bledu 000
 
-string write_polish_words(string file , int nr_line)
+string write_polish_word(string file , int nr_line)
 {
 	if (nr_line > amount_of_words(file))
 		return "000";
@@ -565,7 +603,7 @@ string write_polish_words(string file , int nr_line)
 }
 
 
-
+/*
 string write_polish_word(string file, int nr_line)
 {
 	if (nr_line > amount_of_words(file))
@@ -601,6 +639,7 @@ string write_polish_word(string file, int nr_line)
 	}
 }
 
+*/
 string show_one_word(string word)
 {
 	string line;
@@ -650,6 +689,8 @@ void game_flashcard(string file)
 
 	for (int i = 0; i < amount_of_games; i++)
 	{
+		show_score(amount_of_games, good_answer, wrong_answer);
+
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
 		english_word = write_english_word(file, nr_flashcard);
@@ -659,10 +700,20 @@ void game_flashcard(string file)
 		answer = to_lower(answer);					//Zamiana wszystkich liter odpowiedz na male
 		if (answer != polish_word)
 		{
-			wrong_answer++;
-			cout << "Zla odpowiedz\nPoprawna odpowiedz to:\n"<<polish_word << endl;
-			system("PAUSE");
-			system("cls");
+			if (is_mistake(polish_word, answer))
+			{
+				good_answer++;
+				cout << "Gratulacje poprawna odpowiedz\n" << endl;
+				system("PAUSE");
+				system("cls");
+			}
+			else
+			{
+				wrong_answer++;
+				cout << "Zla odpowiedz\nPoprawna odpowiedz to:\n" << polish_word << endl;
+				system("PAUSE");
+				system("cls");
+			}
 		}
 		else
 		{
@@ -672,6 +723,7 @@ void game_flashcard(string file)
 			system("cls");
 		}
 	}
+	show_score(amount_of_games, good_answer, wrong_answer);
 
 	cout << "Koniec gry liczba poprawnych odpowiedzi wynosi: " << good_answer << " a niepoprawnych: " << wrong_answer<<endl;
 
@@ -695,6 +747,8 @@ void game_flashcard2(string file)
 
 	for (int i = 0; i < amount_of_games; i++)
 	{
+		show_score(amount_of_games, good_answer, wrong_answer);
+
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
 		english_word = write_english_word(file, nr_flashcard);
@@ -704,10 +758,20 @@ void game_flashcard2(string file)
 		answer = to_lower(answer);					//Zamiana wszystkich liter odpowiedz na male
 		if (answer != english_word)
 		{
-			wrong_answer++;
-			cout << "Zla odpowiedz\nPoprawna odpowiedz to:\n" << english_word << endl;
-			system("PAUSE");
-			system("cls");
+			if (is_mistake(english_word, answer))
+			{
+				good_answer++;
+				cout << "Gratulacje poprawna odpowiedz\n" << endl;
+				system("PAUSE");
+				system("cls");
+			}
+			else
+			{
+				wrong_answer++;
+				cout << "Zla odpowiedz\nPoprawna odpowiedz to:\n" << english_word << endl;
+				system("PAUSE");
+				system("cls");
+			}
 		}
 		else
 		{
@@ -717,9 +781,297 @@ void game_flashcard2(string file)
 			system("cls");
 		}
 	}
+	show_score(amount_of_games, good_answer, wrong_answer);
 
 	cout << "Koniec gry liczba poprawnych odpowiedzi wynosi: " << good_answer << " a niepoprawnych: " << wrong_answer << endl;
 
+}
+
+bool is_mistake(string good, string wrong)
+{
+	int answer = -1;
+
+	if (good.length() != wrong.length())
+	{
+		return false;
+	}
+
+	int amount_mistake = -1;
+
+	for (int i = 0; i < good.length(); i++)
+	{
+		if (good[i] != wrong[i])
+		{
+			if (amount_mistake == -1)
+			{
+				amount_mistake = i;
+			}
+			else
+				return false;
+		}
+	}
+
+	if (mistake_char(good[amount_mistake], wrong[amount_mistake]))
+	{
+		cout << "W podanym przez ciebie wyrazie jest literowka zakwalifikowana do bledu niekardynalnego czy chcesz zaakceptorac odpoweidz?\n" <<
+			"tak --- 1\nnie ---0\n";
+			while (answer != 0 && answer != 1)
+			{
+				cin >> answer;
+			}
+
+			if (answer)
+				return true;
+			else
+				return false;
+	}
+	else
+		return false;
+
+	return false;
+}
+
+bool mistake_char(char good, char wrong)
+{
+	switch (good)
+	{
+	case 'q':
+	{
+		if (wrong == 'w' || wrong == 'a')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'w':
+	{
+		if (wrong == 'q' || wrong == 'e' ||wrong == 's')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'e':
+	{
+		if (wrong == 'w' || wrong == 'r' || wrong == 'd')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'r':
+	{
+		if (wrong == 'e' || wrong == 'f' || wrong == 't')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 't':
+	{
+		if (wrong == 'r' || wrong == 'g' || wrong == 'y')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'y':
+	{
+		if (wrong == 't' || wrong == 'h' || wrong == 'u')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'u':
+	{
+		if (wrong == 'y' || wrong == 'j' || wrong == 'i')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'i':
+	{
+		if (wrong == 'u' || wrong == 'k' || wrong == 'o')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'o':
+	{
+		if (wrong == 'i' || wrong == 'l' || wrong == 'p')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'p':
+	{
+		if (wrong == 'o' || wrong == 'l')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'a':
+	{
+		if (wrong == 'q' || wrong == 's' || wrong == 'z')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 's':
+	{
+		if (wrong == 'a' || wrong == 'w' || wrong == 'd' || wrong == 'x')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'd':
+	{
+		if (wrong == 's' || wrong == 'e' || wrong == 'f' || wrong == 'c')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'f':
+	{
+		if (wrong == 'd' || wrong == 'r' || wrong == 'g' || wrong == 'v')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'g':
+	{
+		if (wrong == 'f' || wrong == 't' || wrong == 'h' || wrong == 'b')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'h':
+	{
+		if (wrong == 'g' || wrong == 'y' || wrong == 'j' || wrong == 'n')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'j':
+	{
+		if (wrong == 'h' || wrong == 'u' || wrong == 'k' || wrong == 'm')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'k':
+	{
+		if (wrong == 'j' || wrong == 'i' || wrong == 'l' || wrong == 'm')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'l':
+	{
+		if (wrong == 'k' || wrong == 'o')
+			return true;
+		else
+			return false;
+		break;
+	}
+	
+	case 'z':
+	{
+		if (wrong == 'a' || wrong == 's' || wrong == 'x')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'x':
+	{
+		if (wrong == 'z' || wrong == 's' || wrong == 'd' || wrong == 'c')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'c':
+	{
+		if (wrong == 'x' || wrong == 'd' || wrong == 'f' || wrong == 'v')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'v':
+	{
+		if (wrong == 'c' || wrong == 'f' || wrong == 'g' || wrong == 'b')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'b':
+	{
+		if (wrong == 'v' || wrong == 'g' || wrong == 'h' || wrong == 'n')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'n':
+	{
+		if (wrong == 'b' || wrong == 'h' || wrong == 'j' || wrong == 'm')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	case 'm':
+	{
+		if (wrong == 'n' || wrong == 'j' || wrong == 'k')
+			return true;
+		else
+			return false;
+		break;
+	}
+
+	}
+
+	return false;
 }
 
 
@@ -882,6 +1234,8 @@ void flashcard_quiz(string file)
 
 	for (int i = 0; i < amount_of_games; i++)
 	{
+		show_score(amount_of_games, good_answer, wrong_answer);
+
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
 		english_word = write_english_word(file, nr_flashcard);
@@ -940,6 +1294,7 @@ void flashcard_quiz(string file)
 
 
 	}
+	show_score(amount_of_games, good_answer, wrong_answer);
 
 	cout << "Koniec gry liczba poprawnych odpowiedzi wynosi: " << good_answer << " a niepoprawnych: " << wrong_answer << endl;
 
@@ -962,6 +1317,8 @@ void flashcard_quiz2(string file)
 
 	for (int i = 0; i < amount_of_games; i++)
 	{
+		show_score(amount_of_games, good_answer, wrong_answer);
+
 		nr_flashcard = random_flashcard(file);		//Losowanie numeru fiszki
 
 		english_word = write_english_word(file, nr_flashcard);
@@ -1020,6 +1377,7 @@ void flashcard_quiz2(string file)
 
 
 	}
+	show_score(amount_of_games, good_answer, wrong_answer);
 
 	cout << "Koniec gry liczba poprawnych odpowiedzi wynosi: " << good_answer << " a niepoprawnych: " << wrong_answer << endl;
 
@@ -1296,14 +1654,14 @@ void options()
 	{
 	case 1:
 	{
+		//Tworzenie nowych plikow z fiszkami
 		new_file();
 		break;
 	}
 
 	case 2:
 	{
-
-
+		//Podpinanie gotowych plikow z fiszkami
 		add_file();
 
 		break;
@@ -1311,6 +1669,7 @@ void options()
 
 	case 3:
 	{
+		//Dodawanie nowych fiszek do gotowych plikow
 		add_flashcards();
 
 		break;
@@ -1318,17 +1677,11 @@ void options()
 
 	case 4:
 	{
+		//Usuwanie nazw plikow z pliku files.txt
 		delete_file();
 
 		break;
 	}
-
-
-
-
-
-
-
 
 	}
 
@@ -1585,8 +1938,10 @@ int add_flashcards()
 		{
 			cout << "Podaj slowo po angielsku";
 			cin >> english_word;
+			english_word = to_lower(english_word);
 			cout << "Podaj slowo po polsku";
 			cin >> polish_word;
+			polish_word = to_lower(polish_word);
 			new_file << english_word << " " << polish_word << endl;
 		}
 
@@ -1672,3 +2027,4 @@ int delete_file()
 	return 1;
 
 }
+
