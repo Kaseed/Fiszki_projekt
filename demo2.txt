@@ -27,7 +27,7 @@ amount liczba
 amusement rozbawienie
 and i
 angle haczyk
-angry zlyy
+angry zly
 animal zwierze
 answer odpowiedz
 ant mrowka

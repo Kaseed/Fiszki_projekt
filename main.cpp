@@ -66,14 +66,12 @@ int main()
 	do
 	{
 		
-		
-		
+		//nice	
 		
 		//cout << "Wybierz opcje\n1---Ucz sie fiszek\n2---Gra w fiszki z angielskiego na polski\n3---Gra w fiszki z polskiego na angielski\n4---Wyjscie z programu\n";
 		//cin >> menu;
 
 		menu = color_menu();
-
 
 		switch (menu)
 		{
@@ -695,7 +693,7 @@ void game_flashcard(string file)
 
 		english_word = write_english_word(file, nr_flashcard);
 		polish_word = write_polish_word(file, nr_flashcard);
-		cout << "Podaj slowo po polsku\n"<<english_word<<endl;
+		cout << "Podaj slowo po angielsku\n"<<english_word<<endl;
 		cin >> answer;
 		answer = to_lower(answer);					//Zamiana wszystkich liter odpowiedz na male
 		if (answer != polish_word)
@@ -1418,11 +1416,13 @@ void remember_game(string file)
 	}
 
 	random_queue(array_queue, size_of_board * 2);
-
+	/*
 	for (int i = 0; i < size_of_board * 2; i++)
 	{
 		cout << array_queue[i] << endl;
 	}
+	*/
+
 	//system("pause");
 
 	/*for (int i = 0; i < size_of_board * 2; i ++)
@@ -1431,7 +1431,7 @@ void remember_game(string file)
 	}
 	*/
 
-	for (int j = 0; j < size_of_board * 2; j++)					
+	for (int j = 0; j < size_of_board; j++)					
 	{
 		//znak = 'a';
 
@@ -1560,6 +1560,7 @@ void remember_game(string file)
 			array_numbers[choose[1]-1] = 0;
 			system("pause");
 			system("cls");
+			j--;
 		}
 
 	}
